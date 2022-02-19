@@ -59,6 +59,28 @@ namespace Bannerlord.Localization.Analyzer.Test
         }
 
         [TestMethod]
+        public async Task Correct_LocalConst()
+        {
+            await CreateProjectBuilder().WithSourceCode($@"
+{BannerlordBase}
+
+namespace Bannerlord.Localization.Analyzer.Test
+{{
+    using Unknown;
+
+    class TestClass
+    {{
+        public static void TestMethod()
+        {{
+            const string TestConst = ""{{=EFASE3F31}}Test"";
+            var testValue = TextObjectHelper.Create(TestConst);
+        }}
+    }}
+}}
+").ValidateAsync();
+        }
+
+        [TestMethod]
         public async Task Correct_Static()
         {
             await CreateProjectBuilder().WithSourceCode($@"
@@ -154,6 +176,48 @@ namespace Bannerlord.Localization.Analyzer.Test
         private const string TestConst = ""{{=RANDOM}}Test"";
         public static void TestMethod()
         {{
+            var testValue = TextObjectHelper.Create(TestConst);
+        }}
+    }}
+}}
+").ValidateAsync();
+
+            TextObjectAnalyzerCodeFixProvider.OverrideRandomForTests = false;
+        }
+
+        [TestMethod]
+        public async Task Incorrect_LocalConst()
+        {
+            TextObjectAnalyzerCodeFixProvider.OverrideRandomForTests = true;
+
+            await CreateProjectBuilder().WithSourceCode($@"
+{BannerlordBase}
+
+namespace Bannerlord.Localization.Analyzer.Test
+{{
+    using Unknown;
+
+    class TestClass
+    {{
+        public static void TestMethod()
+        {{
+            const string TestConst = ""Test"";
+            var testValue = TextObjectHelper.Create([||]TestConst);
+        }}
+    }}
+}}
+").ShouldFixCodeWith($@"
+{BannerlordBase}
+
+namespace Bannerlord.Localization.Analyzer.Test
+{{
+    using Unknown;
+
+    class TestClass
+    {{
+        public static void TestMethod()
+        {{
+            const string TestConst = ""{{=RANDOM}}Test"";
             var testValue = TextObjectHelper.Create(TestConst);
         }}
     }}
