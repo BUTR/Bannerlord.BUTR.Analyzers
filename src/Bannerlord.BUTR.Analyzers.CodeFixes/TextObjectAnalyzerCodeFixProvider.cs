@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 
@@ -10,6 +11,8 @@ using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
+using CSharpExtensions = Microsoft.CodeAnalysis.CSharp.CSharpExtensions;
 
 namespace Bannerlord.BUTR.Analyzers
 {
@@ -52,6 +55,21 @@ namespace Bannerlord.BUTR.Analyzers
 
             var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             var generator = editor.Generator;
+
+            if (nodeToFix is IdentifierNameSyntax identifierNameSyntax)
+            {
+                var semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+
+                var referenced = ModelExtensions.GetSymbolInfo(semanticModel, identifierNameSyntax);
+                if (referenced.Symbol.DeclaringSyntaxReferences.Length > 1)
+                    return document;
+
+                var node = await referenced.Symbol.DeclaringSyntaxReferences[0].GetSyntaxAsync(cancellationToken).ConfigureAwait(false);
+                if (node == null)
+                    return document;
+                if (node is VariableDeclaratorSyntax variable && variable.Initializer.Value.Kind() == SyntaxKind.StringLiteralExpression)
+                    nodeToFix = variable.Initializer.Value;
+            }
 
             if (nodeToFix is LiteralExpressionSyntax literal)
             {

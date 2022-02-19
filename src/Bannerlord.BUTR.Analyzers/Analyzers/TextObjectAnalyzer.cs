@@ -23,23 +23,61 @@ namespace Bannerlord.BUTR.Analyzers.Analyzers
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.EnableConcurrentExecution();
 
-            context.RegisterOperationAction(AnalyzeInvocation, OperationKind.ObjectCreation);
+            context.RegisterOperationAction(AnalyzeInvocation, OperationKind.Invocation);
+            context.RegisterOperationAction(AnalyzeObjectCreation, OperationKind.ObjectCreation);
         }
 
         private static void AnalyzeInvocation(OperationAnalysisContext context)
+        {
+            var operation = (IInvocationOperation) context.Operation;
+
+            if (operation.TargetMethod.ReceiverType.Name != "TextObjectHelper") return;
+            if (operation.TargetMethod.Name != "Create") return;
+
+            if (operation.Arguments.Length > 0)
+            {
+                var textArg = operation.Arguments[0];
+                Handle(context, textArg);
+            }
+        }
+
+        private static void AnalyzeObjectCreation(OperationAnalysisContext context)
         {
             var operation = (IObjectCreationOperation) context.Operation;
 
             if (NameFormatter.ReflectionName(operation.Type) != "TaleWorlds.Localization.TextObject") return;
 
-            if (operation.Arguments.Length == 2)
+            if (operation.Arguments.Length > 0)
             {
                 var textArg = operation.Arguments[0];
-                if (textArg.Value is ILiteralOperation { ConstantValue: { HasValue: true, Value: string value } })
+                Handle(context, textArg);
+            }
+        }
+
+        private static void Handle(OperationAnalysisContext context, IArgumentOperation argumentOperation)
+        {
+            if (argumentOperation.Value is { ConstantValue: { HasValue: true, Value: string value } })
+            {
+                if (!IsValidTextObject(value.AsSpan()))
                 {
-                    if (!IsValidTextObject(value.AsSpan()))
+                    var ctx = new GenericContext(context.Compilation, () => argumentOperation.Syntax.GetLocation(), context.ReportDiagnostic);
+                    context.ReportDiagnostic(RuleIdentifiers.ReportIdNotFound(ctx));
+                }
+            }
+            if (argumentOperation.Value is IFieldReferenceOperation { Field: { IsStatic: true, IsReadOnly: true } field })
+            {
+                if (field.DeclaringSyntaxReferences.Length > 1)
+                    return;
+
+                var node = field.DeclaringSyntaxReferences[0].GetSyntax();
+                if (node == null)
+                    return;
+                if (node is VariableDeclaratorSyntax variable && variable.Initializer.Value is LiteralExpressionSyntax literal)
+                {
+                    var text = literal.GetText().ToString().Trim('"');
+                    if (!IsValidTextObject(text.AsSpan()))
                     {
-                        var ctx = new GenericContext(context.Compilation, () => textArg.Syntax.GetLocation(), context.ReportDiagnostic);
+                        var ctx = new GenericContext(context.Compilation, () => argumentOperation.Syntax.GetLocation(), context.ReportDiagnostic);
                         context.ReportDiagnostic(RuleIdentifiers.ReportIdNotFound(ctx));
                     }
                 }

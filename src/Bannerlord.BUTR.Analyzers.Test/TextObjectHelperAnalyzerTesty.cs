@@ -9,7 +9,7 @@ using TestHelper;
 namespace Bannerlord.BUTR.Analyzers.Test
 {
     [TestClass]
-    public class TextObjectAnalyzerTest : BaseTest
+    public class TextObjectHelperAnalyzerTest : BaseTest
     {
         private static ProjectBuilder CreateProjectBuilder() => new ProjectBuilder()
             .WithAnalyzer<TextObjectAnalyzer>()
@@ -23,13 +23,13 @@ namespace Bannerlord.BUTR.Analyzers.Test
 
 namespace Bannerlord.Localization.Analyzer.Test
 {{
-    using TaleWorlds.Localization;
+    using Unknown;
 
     class TestClass
     {{
         public static void TestMethod()
         {{
-            var testValue = new TextObject(""{{=EFASE3F31}}Test"");
+            var testValue = TextObjectHelper.Create(""{{=EFASE3F31}}Test"");
         }}
     }}
 }}
@@ -44,14 +44,14 @@ namespace Bannerlord.Localization.Analyzer.Test
 
 namespace Bannerlord.Localization.Analyzer.Test
 {{
-    using TaleWorlds.Localization;
+    using Unknown;
 
     class TestClass
     {{
         private const string TestConst = ""{{=EFASE3F31}}Test"";
         public static void TestMethod()
         {{
-            var testValue = new TextObject(TestConst);
+            var testValue = TextObjectHelper.Create(TestConst);
         }}
     }}
 }}
@@ -66,19 +66,20 @@ namespace Bannerlord.Localization.Analyzer.Test
 
 namespace Bannerlord.Localization.Analyzer.Test
 {{
-    using TaleWorlds.Localization;
+    using Unknown;
 
     class TestClass
     {{
         private static string TestStatic = ""{{=EFASE3F31}}Test"";
         public static void TestMethod()
         {{
-            var testValue = new TextObject(TestStatic);
+            var testValue = TextObjectHelper.Create(TestStatic);
         }}
     }}
 }}
 ").ValidateAsync();
         }
+
 
         [TestMethod]
         public async Task Incorrect()
@@ -90,13 +91,13 @@ namespace Bannerlord.Localization.Analyzer.Test
 
 namespace Bannerlord.Localization.Analyzer.Test
 {{
-    using TaleWorlds.Localization;
+    using Unknown;
 
     class TestClass
     {{
         public static void TestMethod()
         {{
-            var testValue = new TextObject([||]""Test"");
+            var testValue = TextObjectHelper.Create([||]""Test"");
         }}
     }}
 }}
@@ -105,13 +106,13 @@ namespace Bannerlord.Localization.Analyzer.Test
 
 namespace Bannerlord.Localization.Analyzer.Test
 {{
-    using TaleWorlds.Localization;
+    using Unknown;
 
     class TestClass
     {{
         public static void TestMethod()
         {{
-            var testValue = new TextObject(""{{=RANDOM}}Test"");
+            var testValue = TextObjectHelper.Create(""{{=RANDOM}}Test"");
         }}
     }}
 }}
@@ -130,14 +131,14 @@ namespace Bannerlord.Localization.Analyzer.Test
 
 namespace Bannerlord.Localization.Analyzer.Test
 {{
-    using TaleWorlds.Localization;
+    using Unknown;
 
     class TestClass
     {{
         private const string TestConst = ""Test"";
         public static void TestMethod()
         {{
-            var testValue = new TextObject([||]TestConst);
+            var testValue = TextObjectHelper.Create([||]TestConst);
         }}
     }}
 }}
@@ -146,14 +147,14 @@ namespace Bannerlord.Localization.Analyzer.Test
 
 namespace Bannerlord.Localization.Analyzer.Test
 {{
-    using TaleWorlds.Localization;
+    using Unknown;
 
     class TestClass
     {{
         private const string TestConst = ""{{=RANDOM}}Test"";
         public static void TestMethod()
         {{
-            var testValue = new TextObject(TestConst);
+            var testValue = TextObjectHelper.Create(TestConst);
         }}
     }}
 }}
@@ -172,14 +173,14 @@ namespace Bannerlord.Localization.Analyzer.Test
 
 namespace Bannerlord.Localization.Analyzer.Test
 {{
-    using TaleWorlds.Localization;
+    using Unknown;
 
     class TestClass
     {{
         private static readonly string TestStatic = ""Test"";
         public static void TestMethod()
         {{
-            var testValue = new TextObject([||]TestStatic);
+            var testValue = TextObjectHelper.Create([||]TestStatic);
         }}
     }}
 }}
@@ -188,14 +189,14 @@ namespace Bannerlord.Localization.Analyzer.Test
 
 namespace Bannerlord.Localization.Analyzer.Test
 {{
-    using TaleWorlds.Localization;
+    using Unknown;
 
     class TestClass
     {{
         private static readonly string TestStatic = ""{{=RANDOM}}Test"";
         public static void TestMethod()
         {{
-            var testValue = new TextObject(TestStatic);
+            var testValue = TextObjectHelper.Create(TestStatic);
         }}
     }}
 }}
